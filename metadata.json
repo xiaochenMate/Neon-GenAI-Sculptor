@@ -1,0 +1,5 @@
+{
+  "name": "Neon GenAI Sculptor",
+  "description": "A 3D generative light art studio powered by Gemini. Create, visualize, and modify 3D particle shapes using natural language.",
+  "requestFramePermissions": []
+}
