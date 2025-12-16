@@ -1,7 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ModelDef } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize lazily to prevent top-level crashes if env vars are missing during build/deploy
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your settings.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export async function generateModelUpdate(
   currentModel: ModelDef,
@@ -9,6 +16,7 @@ export async function generateModelUpdate(
   modelList: ModelDef[]
 ): Promise<{ model: ModelDef; message: string }> {
   try {
+    const ai = getAiClient();
     const modelNames = modelList.map((m) => m.name).join(", ");
     
     const systemInstruction = `
@@ -111,6 +119,10 @@ export async function generateModelUpdate(
 
   } catch (error) {
     console.error("Gemini API Error:", error);
-    throw new Error("Failed to generate model. Please try again.");
+    // Return the current model but with an error message so the UI doesn't break
+    return {
+        model: currentModel,
+        message: "Unable to connect to the AI service. Please check your API Key configuration."
+    };
   }
 }
